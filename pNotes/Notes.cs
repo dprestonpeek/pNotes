@@ -10,9 +10,7 @@ namespace pNotes
     {
         public static string AddNote(string noteName)
         {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
-            string filename = Path.Combine(path, noteName);
+            string filename = Path.Combine(Program.currentDir, noteName);
             File.Create(filename);
             return filename;
         }
@@ -27,9 +25,7 @@ namespace pNotes
 
         public static void OpenDirectory()
         {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
-            Process.Start("explorer.exe", path);
+            Process.Start("explorer.exe", Program.currentDir);
         }
 
         public static void WriteNote(string filename)
@@ -39,31 +35,18 @@ namespace pNotes
         
         public static string GetFilename(string noteName)
         {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
-            string filename = Path.Combine(path, noteName);
+            string filename = Path.Combine(Program.currentDir, noteName);
             return filename;
-        }
-
-        public static string GetPath()
-        {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
-            return Path.GetFullPath(path);
         }
 
         public static bool NoteExists(string noteName)
         {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
-            string filename = Path.Combine(path, noteName);
+            string filename = Path.Combine(Program.currentDir, noteName);
             return File.Exists(filename);
         }
 
         public static string[] GetNote(string noteName)
         {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
             string[] text;
 
             text = File.ReadAllLines(noteName);
@@ -73,17 +56,15 @@ namespace pNotes
 
         public static List<string> GetNotes(bool withFilePaths)
         {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
             string[] split;
             string[] files;
             if (withFilePaths)
             {
-                files = Directory.GetFiles(path);
+                files = Directory.GetFiles(Program.currentDir);
             }
             else
             {
-                split = path.Split('\\');
+                split = Program.currentDir.Split('\\');
                 files = Directory.GetFiles(split[split.Length - 1]);
             }
             Array.Sort(files);
@@ -95,17 +76,15 @@ namespace pNotes
 
         public static List<string> GetNotesSortedByDate(bool withFilePaths)
         {
-            string path = Directory.GetCurrentDirectory();
-            path += @"\..";
             string[] split;
             string[] files;
             if (withFilePaths)
             {
-                files = Directory.GetFiles(path);
+                files = Directory.GetFiles(Program.currentDir);
             }
             else
             {
-                split = path.Split('\\');
+                split = Program.currentDir.Split('\\');
                 files = Directory.GetFiles(split[split.Length - 1]);
             }
 
@@ -122,10 +101,9 @@ namespace pNotes
 
         public static List<string> FindExcerpt(string excerpt)
         {
-            string path = Path.Combine(Directory.GetCurrentDirectory(), @"..\");
             string[] files;
             List<string> result = new List<string>();
-            files = Directory.GetFiles(path);
+            files = Directory.GetFiles(Program.currentDir);
 
             foreach (string file in files)
             {

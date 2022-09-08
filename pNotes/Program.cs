@@ -9,17 +9,26 @@ namespace pNotes
     class Program
     {
         public static bool surfing = true;
-        
+        public static bool searching = false;
+        public static string currentDir;
+
         static string[] internalArgs;
         static string singularFile = "";
         static void Main(string[] externalArgs)
         {
+            currentDir = Directory.GetParent(Directory.GetCurrentDirectory()).FullName;
             string input;
             bool initial = true;
             Commands.Initialize();
             AddCommands();
             Notes notes = new Notes();
+
+            if (!externalArgs[0].Equals(""))
+            {
+                DirPath(externalArgs[0]);
+            }
             Output.WriteToConsole("Enter a command or \"help\".");
+
             while (true)
             {
                 if (surfing)
@@ -29,7 +38,7 @@ namespace pNotes
                         PrintHorizontalBarrier();
                     }
                     initial = false;
-                    if (singularFile.Equals(""))
+                    if (singularFile.Equals("") && !searching)
                     {
                         Output.WriteToConsole("All Files ~ ");
                     }
@@ -91,6 +100,7 @@ namespace pNotes
             Commands.AddCommand("Clear Console", new string[2] { "clear", "cls" }, "Clear console text", "", ClearConsole);
             Commands.AddCommand("Print History", new string[3] { "his", "uncls", "unclear" }, "Print collected history", "", PrintHistory);
             Commands.AddCommand("Open Saved Note", new string[2] { "log", "note" }, "Open presaved note", "", OpenSavedNote);
+            Commands.AddCommand("Change Path", new string[1] { "path" }, "Print the current path", "Change the path a given directory", DirPath);
 
             Commands.AddCommand("Help menu", new string[2] { "help", "hlp" }, "Open this help menu", "", PrintHelp);
             Commands.AddCommand("Exit program", new string[1] { "exit" }, "Exit the program", "", null);
@@ -143,6 +153,42 @@ namespace pNotes
             Output.WriteToConsole(question);
             string answer = Console.ReadLine();
             return answer;
+        }
+
+        static void DirPath()
+        {
+            if (internalArgs.Length > 0 && !internalArgs[1].Equals(""))
+            {
+                if (Directory.Exists(internalArgs[1]))
+                {
+                    currentDir = internalArgs[1];
+                    Output.WriteToConsole("Path changed to " + currentDir);
+                }
+                else
+                {
+                    Output.WriteToConsole("Not a valid directory.");
+                }
+            }
+            else
+            {
+                Output.WriteToConsole(currentDir);
+            }
+        }
+
+        static void DirPath(string externalArgs)
+        {
+            if (!externalArgs.Equals(""))
+            {
+                if (Directory.Exists(externalArgs))
+                {
+                    currentDir = externalArgs;
+                    Output.WriteToConsole("Path changed to " + currentDir);
+                }
+                else
+                {
+                    Output.WriteToConsole("Not a valid directory.");
+                }
+            }
         }
 
         static void PrintNotes()
@@ -251,12 +297,18 @@ namespace pNotes
 
         static void FindExcerpt()
         {
+            bool exclude = false;
             bool logNote = false;
             bool recursive = false;
+            bool prompt = false;
+            string path = "";
+            int min = 0; int max = 0;
+            searching = true;
             if (internalArgs.Length == 0)
             {
                 return;
             }
+            path = currentDir;
             if (internalArgs.Length > 2)
             {
                 if (internalArgs[2].Equals("log") || internalArgs[2].Equals("note"))
@@ -267,68 +319,138 @@ namespace pNotes
                 {
                     recursive = true;
                 }
+                if (internalArgs[2].Equals("-rp"))
+                {
+                    recursive = true;
+                    prompt = true;
+                }
+                if (internalArgs[2].Equals("-rpe"))
+                {
+                    recursive = true;
+                    prompt = true;
+                    exclude = true;
+                }
             }
+            Dictionary<int, string> rootDirs = new Dictionary<int, string>();
+            if (prompt)
+            {
+                int j = 0;
+                foreach (string dir in Directory.GetDirectories(currentDir))
+                {
+                    if (dir == currentDir || dir.Contains("netcoreapp3.1"))
+                        continue;
+                    rootDirs.Add(j, dir);
+                    j++;
+                }
+
+                for (int i = 0; i < rootDirs.Count; i++)
+                {
+                    Output.WriteToConsole(i + ":" + "\t" + rootDirs[i]);
+                }
+                Output.WriteToConsole("press X to cancel");
+
+                string input = "";
+
+                input = PromptUser("Choose a 1 or more root directories to search in. (ex. \"3\", \"5-10\")");
+                if (input.Contains('-'))
+                {
+                    exclude = true;
+                    string[] split = input.Split('-');
+                    if (int.TryParse(split[0], out min)) { }
+                    if (int.TryParse(split[1], out max)) { }
+                }
+                else if (int.TryParse(input, out int rootDir))
+                {
+                    prompt = true;
+                }
+                else
+                {
+                    if (input.Equals("x") || input.Equals("X"))
+                    {
+                        prompt = false;
+                        exclude = false;
+                        searching = false;
+                        return;
+                    }
+                }
+            }
+
+            int k = min;
+            do
+            {
+                if (exclude)
+                {
+                    if (k >= min && k <= max)
+                    {
+                        rootDirs.TryGetValue(k, out path);
+                    }
+                    else
+                    {
+                        exclude = false;
+                        return;
+                    }
+                }
+                Task<List<string>> findExcerptTask = Task<List<string>>.Factory.StartNew(() =>
+                {
+                    return DoFindExcerpt(logNote, recursive, path);
+                });
+
+                if (exclude || prompt)
+                {
+                    Console.WriteLine("Searching for excerpt in " + path);
+                }
+                else
+                {
+                    Console.WriteLine("Searching for excerpt ");
+                }
+                PrintHorizontalBarrier();
+                while (!findExcerptTask.IsCompleted)
+                {
+
+                }
+                searching = false;
+                k++;
+            } while (exclude);
+        }
+
+        static List<string> DoFindExcerpt(bool logNote, bool recursive, string path)
+        {
             List<string> toWrite = new List<string>();
-
-            Task<List<string>> findExcerptTask = Task.Factory.StartNew(() => {
-                if (logNote)
-                {
-                    foreach (string line in Notes.FindErrorInNote(internalArgs[1], Properties.Resources.PresetNote))
-                    {
-                        toWrite.Add(line + "\n");
-                    }
-                }
-                else if (singularFile.Equals(""))
-                {
-                    List<string> dirs = new List<string>();
-                    dirs.Add(Notes.GetPath());
-                    if (recursive)
-                    {
-                        dirs.AddRange(BuildDirectoriesList(Notes.GetPath()));
-                    }
-
-                    foreach (string dir in dirs)
-                    {
-                        foreach (string line in Notes.FindExcerpt(internalArgs[1], dir))
-                        {
-                            toWrite.Add(line + "\n");
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (string line in Notes.FindExcerptInNote(internalArgs[1], singularFile))
-                    {
-                        toWrite.Add(line + "\n");
-                    }
-                }
-                return toWrite;
-            });
-
-            Console.Write("Searching for excerpt. ");
-            int i = 0;
-            while (!findExcerptTask.IsCompleted)
+            if (logNote)
             {
-                if (i < 4)
+                foreach (string line in Notes.FindErrorInNote(internalArgs[1], Properties.Resources.PresetNote))
                 {
-                    Console.Write("|");
+                    Output.WriteToConsole(line);
+                    //toWrite.Add(line + "\n");
                 }
-                else
-                {
-                    Console.Write("\b\b\b\b");
-                    Console.BackgroundColor = ConsoleColor.White;
-                    Console.Write("||||");
-                    Console.BackgroundColor = ConsoleColor.Black;
-                    Console.Write(" ");
-                }
-                i++;
-                findExcerptTask.Wait(1000);
             }
-            Console.WriteLine();
-            foreach(string line in findExcerptTask.Result)
+            else if (singularFile.Equals(""))
             {
-                Output.WriteToConsole(line);
+                List<string> dirs = new List<string>();
+                dirs.Add(path);
+                if (recursive)
+                {
+                    dirs.AddRange(BuildDirectoriesList(path));
+                }
+
+                foreach (string dir in dirs)
+                {
+                    foreach (string line in Notes.FindExcerpt(internalArgs[1], dir))
+                    {
+                        Output.WriteToConsole("\n" + line);
+                        //toWrite.Add(line + "\n");
+                    }
+                }
             }
+            else
+            {
+                foreach (string line in Notes.FindExcerptInNote(internalArgs[1], singularFile))
+                {
+                    Output.WriteToConsole(line);
+                    //toWrite.Add(line + "\n");
+                }
+            }
+            return toWrite;
         }
 
         static List<string> BuildDirectoriesList(string path)
