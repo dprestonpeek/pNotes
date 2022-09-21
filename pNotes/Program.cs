@@ -23,7 +23,7 @@ namespace pNotes
             AddCommands();
             Notes notes = new Notes();
 
-            if (!externalArgs[0].Equals(""))
+            if (externalArgs.Length > 0 && !externalArgs[0].Equals(""))
             {
                 DirPath(externalArgs[0]);
             }
@@ -302,6 +302,8 @@ namespace pNotes
             bool recursive = false;
             bool prompt = false;
             string path = "";
+            string modifier = "";
+            string term = "";
             int min = 0; int max = 0;
             searching = true;
             if (internalArgs.Length == 0)
@@ -311,24 +313,31 @@ namespace pNotes
             path = currentDir;
             if (internalArgs.Length > 2)
             {
-                if (internalArgs[2].Equals("log") || internalArgs[2].Equals("note"))
+                for (int i = 1; i < internalArgs.Length; i++)
+                {
+                    if (i < internalArgs.Length - 1)
+                        term += internalArgs[i];
+                    if (i < internalArgs.Length - 2)
+                        term += " ";
+                    if (i == internalArgs.Length - 1 && internalArgs[i][0] == '-')
+                        modifier = internalArgs[i];
+                    else if (i == internalArgs.Length - 1)
+                        term += " " + internalArgs[i];
+
+                }
+
+                if (modifier.Equals("-log") || internalArgs[2].Equals("-note"))
                 {
                     logNote = true;
                 }
-                if (internalArgs[2].Equals("-r"))
+                if (modifier.Equals("-r"))
                 {
                     recursive = true;
                 }
-                if (internalArgs[2].Equals("-rp"))
+                if (modifier.Equals("-rp"))
                 {
                     recursive = true;
                     prompt = true;
-                }
-                if (internalArgs[2].Equals("-rpe"))
-                {
-                    recursive = true;
-                    prompt = true;
-                    exclude = true;
                 }
             }
             Dictionary<int, string> rootDirs = new Dictionary<int, string>();
@@ -362,6 +371,8 @@ namespace pNotes
                 else if (int.TryParse(input, out int rootDir))
                 {
                     prompt = true;
+                    min = rootDir;
+                    max = rootDir;
                 }
                 else
                 {
@@ -390,9 +401,13 @@ namespace pNotes
                         return;
                     }
                 }
+                if (prompt)
+                {
+                    rootDirs.TryGetValue(min, out path);
+                }
                 Task<List<string>> findExcerptTask = Task<List<string>>.Factory.StartNew(() =>
                 {
-                    return DoFindExcerpt(logNote, recursive, path);
+                    return DoFindExcerpt(term, logNote, recursive, path);
                 });
 
                 if (exclude || prompt)
@@ -413,12 +428,12 @@ namespace pNotes
             } while (exclude);
         }
 
-        static List<string> DoFindExcerpt(bool logNote, bool recursive, string path)
+        static List<string> DoFindExcerpt(string term, bool logNote, bool recursive, string path)
         {
             List<string> toWrite = new List<string>();
             if (logNote)
             {
-                foreach (string line in Notes.FindErrorInNote(internalArgs[1], Properties.Resources.PresetNote))
+                foreach (string line in Notes.FindErrorInNote(term, Properties.Resources.PresetNote))
                 {
                     Output.WriteToConsole(line);
                     //toWrite.Add(line + "\n");
@@ -435,7 +450,7 @@ namespace pNotes
 
                 foreach (string dir in dirs)
                 {
-                    foreach (string line in Notes.FindExcerpt(internalArgs[1], dir))
+                    foreach (string line in Notes.FindExcerpt(term, dir))
                     {
                         Output.WriteToConsole("\n" + line);
                         //toWrite.Add(line + "\n");
@@ -444,7 +459,7 @@ namespace pNotes
             }
             else
             {
-                foreach (string line in Notes.FindExcerptInNote(internalArgs[1], singularFile))
+                foreach (string line in Notes.FindExcerptInNote(term, singularFile))
                 {
                     Output.WriteToConsole(line);
                     //toWrite.Add(line + "\n");
