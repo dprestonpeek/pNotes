@@ -11,6 +11,7 @@ namespace pNotes
         public static bool surfing = true;
         public static bool searching = false;
         public static string currentDir;
+        public static List<string> forbiddenFileTypes = new List<string>() { ".db", ".lib", ".pri", ".exe", ".zip", "svn.base", ".ipch" };
 
         static string[] internalArgs;
         static string singularFile = "";
@@ -297,9 +298,9 @@ namespace pNotes
         static void FindExcerpt()
         {
             bool exclude = false;
-            bool logNote = false;
             bool recursive = false;
             bool prompt = false;
+            bool large = false;
             string path = "";
             string modifier = "";
             string term = "";
@@ -329,10 +330,6 @@ namespace pNotes
                         term += " " + internalArgs[i];
                 }
 
-                //if (modifier.Equals("-log") || internalArgs[2].Equals("-note"))
-                //{
-                //    logNote = true;
-                //}
                 if (modifier.Equals("-r"))
                 {
                     recursive = true;
@@ -341,10 +338,31 @@ namespace pNotes
                 {
                     prompt = true;
                 }
+                if (modifier.Equals("-l"))
+                {
+                    large = true;
+                }
+                if (modifier.Equals("-lp") || modifier.Equals("-pl"))
+                {
+                    large = true;
+                    prompt = true;
+                }
+                if (modifier.Equals("-rl") || modifier.Equals("-lr"))
+                {
+                    recursive = true;
+                    large = true;
+                }
                 if (modifier.Equals("-rp") || modifier.Equals("-pr"))
                 {
                     recursive = true;
                     prompt = true;
+                }
+                if (modifier.Equals("-rpl") || modifier.Equals("-rlp") || modifier.Equals("-lrp") || 
+                    modifier.Equals("-lpr") || modifier.Equals("-plr") || modifier.Equals("-prl"))
+                {
+                    recursive = true;
+                    prompt = true;
+                    large = true;
                 }
             }
             else
@@ -352,10 +370,11 @@ namespace pNotes
                 term = internalArgs[1];
             }
             Dictionary<int, string> rootDirs = new Dictionary<int, string>();
+            rootDirs.Add(0, currentDir);
             if (prompt)
             {
                 string[] args = internalArgs;
-                int j = 0;
+                int j = 1;
                 foreach (string dir in Directory.GetDirectories(currentDir))
                 {
                     if (dir == currentDir/* || dir.Contains("netcoreapp3.1")*/)
@@ -442,48 +461,42 @@ namespace pNotes
                         else
                         {
                             exclude = false;
+                            break;
                         }
                     }
                     rootDirs.TryGetValue(k, out path);
                 }
-                //if (prompt)
-                //{
-                //    rootDirs.TryGetValue(minDir, out path);
-                //}
-                Task<List<string>> findExcerptTask = Task<List<string>>.Factory.StartNew(() =>
+                Task<List<string>> findExcerptTask;
+                List<string> toWrite = new List<string>();
+                findExcerptTask = Task<List<string>>.Factory.StartNew(() =>
                 {
-                    return DoFindExcerpt(term, logNote, recursive, path);
+                    toWrite = DoFindExcerpt(term, large, recursive, path);
+                    return toWrite;
                 });
 
-                if (exclude || prompt)
-                {
-                    Console.WriteLine("Searching for excerpt in " + path);
-                }
-                else
-                {
-                    Console.WriteLine("Searching for excerpt in " + currentDir);
-                }
+                Console.WriteLine("Searching for excerpt in " + currentDir);
+
                 Output.PrintHorizontalBarrier();
                 while (!findExcerptTask.IsCompleted)
                 {
 
+                }
+                if (large)
+                {
+                    foreach (string line in findExcerptTask.Result)
+                    {
+                        Output.WriteLine(line);
+                    }
                 }
                 searching = false;
                 k++;
             } while (exclude);
         }
 
-        static List<string> DoFindExcerpt(string term, bool logNote, bool recursive, string path)
+        static List<string> DoFindExcerpt(string term, bool large, bool recursive, string path)
         {
             List<string> toWrite = new List<string>();
-            //if (logNote)
-            //{
-            //    foreach (string line in Notes.FindErrorInNote(term, Properties.Resources.PresetNote))
-            //    {
-            //        Output.WriteToConsole(line);
-            //        //toWrite.Add(line + "\n");
-            //    }
-            //}
+
             if (singularFile.Equals(""))
             {
                 List<string> dirs = new List<string>();
@@ -497,8 +510,14 @@ namespace pNotes
                 {
                     foreach (string line in Notes.FindExcerpt(term, dir))
                     {
-                        Output.WriteLine("\n" + line);
-                        //toWrite.Add(line + "\n");
+                        if (large)
+                        {
+                            toWrite.Add(line + "\n");
+                        }
+                        else
+                        {
+                            Output.WriteLine("\n" + line);
+                        }
                     }
                 }
             }
@@ -506,8 +525,14 @@ namespace pNotes
             {
                 foreach (string line in Notes.FindExcerptInNote(term, singularFile))
                 {
-                    Output.WriteLine(line);
-                    //toWrite.Add(line + "\n");
+                    if (large)
+                    {
+                        toWrite.Add(line + "\n");
+                    }
+                    else
+                    {
+                        Output.WriteLine(line);
+                    }
                 }
             }
             return toWrite;
@@ -670,18 +695,6 @@ namespace pNotes
             {
                 newFileName = PromptUser("Enter new file name: ");
             }
-
-            //if (newFileName.Length < 5)
-            //{
-            //    newFileName += ".txt";
-            //}
-            //else
-            //{
-            //    if (newFileName.Substring(newFileName.Length - 5) != ".txt")
-            //    {
-            //        newFileName += ".txt";
-            //    }
-            //}
 
             string fullFileName = Notes.GetFilename(newFileName);
             if (Notes.NoteExists(fullFileName))

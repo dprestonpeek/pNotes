@@ -155,11 +155,15 @@ namespace pNotes
             string contents = "";
             try
             {
-                contents = File.ReadAllText(file);
+                if (!Program.forbiddenFileTypes.Contains(Path.GetExtension(file)))
+                {
+                    contents = File.ReadAllText(file);
+                }
             }
             catch (Exception e)
             {
-                Output.WriteLine("File " + file + "is in use.");
+                //Output.WriteLine("File " + file + "is in use.");
+                Output.WriteLine("File could not be read: " + e.Message);
                 return null;
             }
             try

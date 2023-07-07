@@ -69,6 +69,8 @@ namespace pNotes
         public static void PrintHelp()
         {
             PrintHorizontalBarrier();
+            WriteLine("pNotes v0.9");
+            PrintHorizontalBarrier();
             WriteLine("Commands" + "\t" + "Functions" + "\t\t" + "Desc (no args)" + "\t\t\t" + "Desc (w/ args)");
             foreach (Command command in Commands.List)
             {
@@ -105,7 +107,7 @@ namespace pNotes
 
             arg = "-p";
             name = "Prompt";
-            desc = "Prompt which directories to search (non-recursive)";
+            desc = "Prompt for directories to search in (non-recursive)";
             tab1 = GetTab1(arg);
             tab2 = GetTab2(name);
             WriteLine(arg + tab1 + name + tab2 + desc);
@@ -119,6 +121,13 @@ namespace pNotes
 
             arg = "-l";
             name = "Large Data";
+            desc = "Search (non-recursive) and show hits when complete";
+            tab1 = GetTab1(arg);
+            tab2 = GetTab2(name);
+            WriteLine(arg + tab1 + name + tab2 + desc);
+
+            arg = "-pl, -lp";
+            name = "Large Data & Prompt";
             desc = "Prompt which directories to search (non-recursive) and show hits when complete";
             tab1 = GetTab1(arg);
             tab2 = GetTab2(name);
@@ -126,6 +135,13 @@ namespace pNotes
 
             arg = "-rl, -lr";
             name = "Large Data & Recurse";
+            desc = "Search (recursive) and show hits when complete";
+            tab1 = GetTab1(arg);
+            tab2 = GetTab2(name);
+            WriteLine(arg + tab1 + name + tab2 + desc);
+
+            arg = "-rlp, -plr...";
+            name = "Large Data, P & R";
             desc = "Prompt which directories to search (recursive) and show hits when complete";
             tab1 = GetTab1(arg);
             tab2 = GetTab2(name);
