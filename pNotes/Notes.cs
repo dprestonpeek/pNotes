@@ -120,19 +120,33 @@ namespace pNotes
 
             foreach (string file in files)
             {
-                result.AddRange(FindExcerptInNote(excerpt, file));
+                List<string> foundExcerpt = FindExcerptInNote(excerpt, file);
+                if (foundExcerpt != null)
+                {
+                    result.AddRange(foundExcerpt);
+                }
             }
             return result;
         }
 
         public static List<string> FindExcerptInNote(string excerpt, string file)
         {
-            return FindExcerptInNote(excerpt, file, 100, 200);
+            List<string> foundExcerpt = FindExcerptInNote(excerpt, file, 100, 200);
+            if (foundExcerpt != null)
+            {
+                return foundExcerpt;
+            }
+            return null;
         }
 
         public static List<string> FindErrorInNote(string excerpt, string file)
         {
-            return FindExcerptInNote(excerpt, file, 250, 1000);
+            List<string> foundExcerpt = FindExcerptInNote(excerpt, file, 250, 1000);
+            if (foundExcerpt != null)
+            {
+                return foundExcerpt;
+            }
+            return null;
         }
 
         public static List<string> FindExcerptInNote(string excerpt, string file, int head, int tail)
@@ -145,48 +159,55 @@ namespace pNotes
             }
             catch (Exception e)
             {
-                Output.WriteToConsole("File is in use.");
+                Output.WriteLine("File " + file + "is in use.");
                 return null;
             }
-            string lowerContents = contents.ToLower();
-            string lowerExcerpt = excerpt.ToLower();
-            if (lowerContents.Contains(lowerExcerpt))
+            try
             {
-                int index = lowerContents.IndexOf(lowerExcerpt);
+                string lowerContents = contents.ToLower();
+                string lowerExcerpt = excerpt.ToLower();
+                if (lowerContents.Contains(lowerExcerpt))
+                {
+                    int index = lowerContents.IndexOf(lowerExcerpt);
 
-                result.Add(file + "\n-");
-                try
-                {
-                    if (index > 100)
+                    result.Add(file + "\n-");
+                    try
                     {
-                        if (contents.Length > index + tail + excerpt.Length)
+                        if (index > 100)
                         {
-                            int i = index - head;
-                            result.Add("\"..." + contents.Substring(index - head, tail + excerpt.Length) + "...\"");
+                            if (contents.Length > index + tail + excerpt.Length)
+                            {
+                                int i = index - head;
+                                result.Add("\"..." + contents.Substring(index - head, tail + excerpt.Length) + "...\"");
+                            }
+                            else
+                            {
+                                int i = index - head;
+                                result.Add("..." + contents.Substring(index - head) + "\"");
+                            }
                         }
                         else
                         {
-                            int i = index - head;
-                            result.Add("..." + contents.Substring(index - head) + "\"");
+                            if (contents.Length > index + tail + excerpt.Length)
+                            {
+                                result.Add(contents.Substring(index, tail + excerpt.Length) + "...\"");
+                            }
+                            else
+                            {
+                                result.Add(contents.Substring(index) + "\"");
+                            }
                         }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        if (contents.Length > index + tail + excerpt.Length)
-                        {
-                            result.Add(contents.Substring(index, tail + excerpt.Length) + "...\"");
-                        }
-                        else
-                        {
-                            result.Add(contents.Substring(index) + "\"");
-                        }
+                        result.Add(contents.Substring(index) + "\"");
                     }
+                    result.Add(GetHorizontalBarrier());
                 }
-                catch (Exception e)
-                {
-                    result.Add(contents.Substring(index) + "\"");
-                }
-                result.Add(GetHorizontalBarrier());
+            }
+            catch (Exception ex)
+            {
+                Output.WriteLine(ex.Message);
             }
             return result;
         }

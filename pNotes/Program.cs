@@ -23,12 +23,13 @@ namespace pNotes
             Commands.Initialize();
             AddCommands();
             Notes notes = new Notes();
+            //Console.SetWindowSize(200, 20);
 
             if (externalArgs.Length > 0 && !externalArgs[0].Equals(""))
             {
                 extArgs = true;
             }
-            Output.WriteToConsole("Enter a command or \"help\".");
+            Output.WriteLine("Enter a command or \"help\".");
 
             while (true)
             {
@@ -36,12 +37,12 @@ namespace pNotes
                 {
                     if (!initial)
                     {
-                        PrintHorizontalBarrier();
+                        Output.PrintHorizontalBarrier();
                     }
                     initial = false;
                     if (singularFile.Equals("") && !searching)
                     {
-                        Output.Write("All Files ~ ");
+                        Output.Write("pCmd ~ ");
                     }
                     else
                     {
@@ -59,14 +60,14 @@ namespace pNotes
                                 input += " ";
                             }
                         }
-                        Output.WriteToConsole(input);
+                        Output.WriteLine(input);
                         extArgs = false;
                     }
                     else
                     {
                         input = Console.ReadLine();
                     }
-                    Output.WriteToConsole();
+                    Output.NewLine();
 
                     foreach (Command command in Commands.List)
                     {
@@ -87,7 +88,7 @@ namespace pNotes
                             }
                             catch (Exception e)
                             {
-                                Output.WriteToConsole(e.Message);
+                                Output.WriteLine(e.Message);
                             }
                         }
                         if (input == "exit")
@@ -95,7 +96,7 @@ namespace pNotes
                             break;
                         }
                     }
-                    Output.WriteToConsole();
+                    Output.NewLine();
                     if (input == "exit")
                     {
                         break;
@@ -107,69 +108,27 @@ namespace pNotes
         static void AddCommands()
         {
             //add commands here
-            Commands.AddCommand("Print Notes List", new string[2] { "list", "ls" }, "Print names of available files", "Print notes containing specified keyword", PrintNotes);
-            Commands.AddCommand("Find Excerpt", new string[2] { "find", "fnd" }, "", "Search files for specified excerpt, print excerpt if found", FindExcerpt);
-            Commands.AddCommand("Search Partial Filename", new string[1] { "search" }, "", "Search file names for specified excerpt, print filename if found", SearchFilenames);
-            Commands.AddCommand("Read Note", new string[2] { "read", "red" }, "Read selected file", "Print file text in cmd window", ReadNote);
-            Commands.AddCommand("Open Note", new string[2] { "open", "opn" }, "Open selected file", "Open file in notepad", OpenNote);
-            Commands.AddCommand("Open Note in Code", new string[1] { "code" }, "Open file in VS Code", "Open file in VS Code", OpenNoteInCode);
-            Commands.AddCommand("Hone in on Note ", new string[2] { "hone", "hn" }, "Set context to everything", "Set context to file matching specified keyword", HoneInOnNote);
-            Commands.AddCommand("New Note", new string[1] { "new" }, "Create new file", "", NewNote);
+            Commands.AddCommand("Print File List", new string[2] { "list", "ls" }, "Print names of available files", "Print files containing specified keyword", PrintFiles);
+            Commands.AddCommand("Find Excerpt", new string[2] { "find", "fnd" }, "Open \"Find Command Help Page\"", "Search files for specified excerpt, print", FindExcerpt);
+            Commands.AddCommand("Search Partial Filename", new string[1] { "search" }, "", "Search file names for specified excerpt, print", SearchFilenames);
+            Commands.AddCommand("Read File", new string[2] { "read", "red" }, "Read selected file", "Print file text in cmd window", ReadFile);
+            Commands.AddCommand("Open File", new string[2] { "open", "opn" }, "Open selected file", "Open file in notepad", OpenFileInNotepad);
+            Commands.AddCommand("Open File in Code", new string[1] { "code" }, "Open file in VS Code", "Open file in VS Code", OpenFileInCode);
+            Commands.AddCommand("Hone in on File ", new string[2] { "hone", "hn" }, "Set context to everything", "Set context to file matching specified keyword", HoneInOnFile);
+            Commands.AddCommand("New File", new string[1] { "new" }, "Create new file", "", NewFile);
             Commands.AddCommand("Open Directory", new string[1] { "dir" }, "Open directory of files in explorer", "", OpenDirectory);
-            Commands.AddCommand("Clear Console", new string[2] { "clear", "cls" }, "Clear console text", "", ClearConsole);
+            Commands.AddCommand("Clear Console", new string[2] { "clear", "cls" }, "Clear console text", "", Output.ClearConsole);
             Commands.AddCommand("Print History", new string[2] { "his", "uncls" }, "Print collected history", "", PrintHistory);
-            Commands.AddCommand("Open Saved Note", new string[2] { "log", "note" }, "Open presaved note", "", OpenSavedNote);
+            //Commands.AddCommand("Open Saved File", new string[2] { "log", "note" }, "Open presaved file", "", OpenSavedFile);
             Commands.AddCommand("Change Path", new string[2] { "path", "where" }, "Print the current path", "Change the path a given directory", DirPath);
 
-            Commands.AddCommand("Help menu", new string[2] { "help", "hlp" }, "Open this help menu", "", PrintHelp);
+            Commands.AddCommand("Help menu", new string[2] { "help", "hlp" }, "Open this help menu", "", Output.PrintHelp);
             Commands.AddCommand("Exit program", new string[1] { "exit" }, "Exit the program", "", null);
-        }
-
-        static void PrintHelp()
-        {
-            Output.WriteToConsole("Commands" + "\t" + "Functions" + "\t\t" + "Desc (no args)" + "\t\t\t" + "Desc (w/ args)");
-            foreach (Command command in Commands.List)
-            {
-                string commands = command.GetCommandsAsString();
-                string tab1 = "\t";
-                string tab2 = "\t";
-                string tab3 = "\t";
-                if (commands.Length < 8)
-                {
-                    tab1 = "\t\t";
-                }
-                if (command.Name.Length < 8)
-                {
-                    tab2 = "\t\t\t";
-                }
-                else if (command.Name.Length < 16)
-                {
-                    tab2 = "\t\t";
-                }
-                if (command.NoArgsDesc.Length == 0)
-                {
-                    tab3 = "\t\t\t\t";
-                }
-                else if (command.NoArgsDesc.Length < 8)
-                {
-                    tab3 = "\t\t\t\t";
-                }
-                else if (command.NoArgsDesc.Length < 16)
-                {
-                    tab3 = "\t\t\t";
-                }
-                else if (command.NoArgsDesc.Length < 24)
-                {
-                    tab3 = "\t\t";
-                }
-                Output.WriteToConsole(commands + tab1 + command.Name + tab2 + command.NoArgsDesc + tab3 + command.ArgsDesc);
-            }
-            Output.WriteToConsole();
         }
 
         static string PromptUser(string question)
         {
-            Output.WriteToConsole(question);
+            Output.WriteLine(question);
             string answer = Console.ReadLine();
             return answer;
         }
@@ -178,19 +137,39 @@ namespace pNotes
         {
             if (internalArgs.Length > 0 && !internalArgs[1].Equals(""))
             {
-                if (Directory.Exists(internalArgs[1]))
+                string newPath = internalArgs[1];
+
+                if (internalArgs.Length > 2)
                 {
-                    currentDir = internalArgs[1];
-                    Output.WriteToConsole("Path changed to " + currentDir);
+                    newPath = "";
+                    for (int i = 1; i < internalArgs.Length; i++)
+                    {
+                        newPath += internalArgs[i];
+                        if (i < internalArgs.Length - 1)
+                        {
+                            newPath += " ";
+                        }
+                    }
+                }
+
+                if (newPath.Equals("..") || newPath.Equals("../"))
+                {
+                    newPath = Directory.GetParent(newPath).ToString();
+                }
+
+                if (Directory.Exists(newPath))
+                {
+                    currentDir = newPath;
+                    Output.WriteLine("Path changed to " + currentDir);
                 }
                 else
                 {
-                    Output.WriteToConsole("Not a valid directory.");
+                    Output.WriteLine("Not a valid directory.");
                 }
             }
             else
             {
-                Output.WriteToConsole(currentDir);
+                Output.WriteLine(currentDir);
             }
         }
 
@@ -201,16 +180,16 @@ namespace pNotes
                 if (Directory.Exists(externalArgs))
                 {
                     currentDir = externalArgs;
-                    Output.WriteToConsole("Path changed to " + currentDir);
+                    Output.WriteLine("Path changed to " + currentDir);
                 }
                 else
                 {
-                    Output.WriteToConsole("Not a valid directory.");
+                    Output.WriteLine("Not a valid directory.");
                 }
             }
         }
 
-        static void PrintNotes()
+        static void PrintFiles()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -220,15 +199,15 @@ namespace pNotes
             List<string> notes;
             if (usingArgs)
             {
-                notes = GetNotes(internalArgs[1], false);
+                notes = GetFilesAndDirectories(internalArgs[1], false);
             }
             else
             {
-                notes = GetNotes("", false);
+                notes = GetFilesAndDirectories("", false);
             }
             foreach (string note in notes)
             {
-                Output.WriteToConsole(note);
+                Output.WriteLine(note);
             }
         }
 
@@ -251,7 +230,7 @@ namespace pNotes
 
             foreach (string note in notes)
             {
-                Output.WriteToConsole(note);
+                Output.WriteLine(note);
             }
         }
 
@@ -264,29 +243,30 @@ namespace pNotes
             Output.PrintHistory();
         }
 
-        static List<string> GetNotes(string filename, bool withFilePaths)
+        static List<string> GetFilesAndDirectories(string filename, bool withFilePaths)
         {
-            List<string> notes = new List<string>();
+            List<string> filesAndDirs = new List<string>();
             bool usingArgs = false;
             if (internalArgs.Length > 0)
             {
                 usingArgs = true;
             }
-            foreach (string note in Notes.GetNotes(withFilePaths))
+
+            foreach (string file in Directory.GetFileSystemEntries(currentDir))
             {
                 if (filename.Equals(""))
                 {
-                    notes.Add(note);
+                    filesAndDirs.Add(file);
                 }
                 else
                 {
-                    if (!usingArgs || (usingArgs && note.Contains(filename)))
+                    if (!usingArgs || (usingArgs && file.Contains(filename)))
                     {
-                        notes.Add(note);
+                        filesAndDirs.Add(file);
                     }
                 }
             }
-            return notes;
+            return filesAndDirs;
         }
 
         static List<string> GetSortedNotes(string filename, bool withFilePaths)
@@ -330,6 +310,8 @@ namespace pNotes
             searching = true;
             if (internalArgs.Length == 0)
             {
+                //we actually want to display the help page here
+                Output.PrintFindHelp();
                 return;
             }
             path = currentDir;
@@ -355,7 +337,11 @@ namespace pNotes
                 {
                     recursive = true;
                 }
-                if (modifier.Equals("-rp"))
+                if (modifier.Equals("-p"))
+                {
+                    prompt = true;
+                }
+                if (modifier.Equals("-rp") || modifier.Equals("-pr"))
                 {
                     recursive = true;
                     prompt = true;
@@ -380,9 +366,9 @@ namespace pNotes
 
                 for (int i = 0; i < rootDirs.Count; i++)
                 {
-                    Output.WriteToConsole(i + ":" + "\t" + rootDirs[i]);
+                    Output.WriteLine(i + ":" + "\t" + rootDirs[i]);
                 }
-                Output.WriteToConsole("enter X to cancel");
+                Output.WriteLine("enter X to cancel");
 
                 string input = "";
 
@@ -391,10 +377,10 @@ namespace pNotes
                 string[] inputs = input.Split(',');
                 foreach (string i in inputs)
                 {
+                    exclude = true;
                     int min = 0; int max = 0;
                     if (i.Contains("-"))
                     {
-                        exclude = true;
                         string[] split = i.Split('-');
                         if (int.TryParse(split[0], out min)) 
                         {
@@ -424,6 +410,10 @@ namespace pNotes
                         dirsToSearch.Add(l);
                     }
                 }
+            }
+            else
+            {
+                dirsToSearch.Add(0);
             }
 
             int k = dirsToSearch[0];
@@ -471,9 +461,9 @@ namespace pNotes
                 }
                 else
                 {
-                    Console.WriteLine("Searching for excerpt ");
+                    Console.WriteLine("Searching for excerpt in " + currentDir);
                 }
-                PrintHorizontalBarrier();
+                Output.PrintHorizontalBarrier();
                 while (!findExcerptTask.IsCompleted)
                 {
 
@@ -500,14 +490,14 @@ namespace pNotes
                 dirs.Add(path);
                 if (recursive)
                 {
-                    dirs.AddRange(BuildDirectoriesList(path));
+                    dirs.AddRange(BuildDirectoriesList(path, false));
                 }
 
                 foreach (string dir in dirs)
                 {
                     foreach (string line in Notes.FindExcerpt(term, dir))
                     {
-                        Output.WriteToConsole("\n" + line);
+                        Output.WriteLine("\n" + line);
                         //toWrite.Add(line + "\n");
                     }
                 }
@@ -516,7 +506,7 @@ namespace pNotes
             {
                 foreach (string line in Notes.FindExcerptInNote(term, singularFile))
                 {
-                    Output.WriteToConsole(line);
+                    Output.WriteLine(line);
                     //toWrite.Add(line + "\n");
                 }
             }
@@ -528,38 +518,39 @@ namespace pNotes
             string term = "";
             if (internalArgs.Length == 0 || internalArgs.Length > 2)
             {
-                Output.WriteToConsole("Please enter a valid argument");
+                Output.WriteLine("Please enter a valid argument");
                 return;
             }
             else
             {
                 term = internalArgs[1];
             }
-            foreach (string dir in BuildDirectoriesList(currentDir))
+            foreach (string dir in BuildDirectoriesList(currentDir, true))
             {
                 foreach (string file in Directory.GetFiles(dir))
                 {
                     if (file.ToLower().Contains(term.ToLower()))
                     {
-                        Output.WriteToConsole(file);
+                        Output.WriteLine(file);
                     }
                 }
             }
         }
 
-        static List<string> BuildDirectoriesList(string path)
+        static List<string> BuildDirectoriesList(string path, bool includeRoot)
         {
             List<string> dirs = new List<string>();
+            if (includeRoot)
+            {
+                dirs.Add(path);
+            }
             foreach (string dir in Directory.GetDirectories(path))
             {
-                if (!dir.Contains("netcoreapp3.1"))
+                if (Directory.GetDirectories(dir).Length > 0)
                 {
-                    if (Directory.GetDirectories(dir).Length > 0)
-                    {
-                        dirs.AddRange(BuildDirectoriesList(dir));
-                    }
-                    dirs.Add(dir);
+                    dirs.AddRange(BuildDirectoriesList(dir, false));
                 }
+                dirs.Add(dir);
             }
 
             return dirs;
@@ -570,26 +561,26 @@ namespace pNotes
             SetSingularFile("");
         }
 
-        static void HoneInOnNote()
+        static void HoneInOnFile()
         {
             if (internalArgs.Length == 0)
             {
                 HoneBackOut();
                 return;
             }
-            List<string> notes = GetNotes(internalArgs[1], true);
-            if (notes.Count > 1)
+            List<string> files = GetFilesAndDirectories(internalArgs[1], true);
+            if (files.Count > 1)
             {
-                Output.WriteToConsole("Please specify further, these are all the files matching that keyword.");
-                foreach (string note in notes)
+                Output.WriteLine("Please specify further, these are all the files matching that keyword.");
+                foreach (string note in files)
                 {
-                    Output.WriteToConsole(note);
+                    Output.WriteLine(note);
                 }
             }
             else
             {
-                Output.WriteToConsole(notes[0]);
-                SetSingularFile(notes[0]);
+                Output.WriteLine(files[0]);
+                SetSingularFile(files[0]);
             }
         }
 
@@ -598,7 +589,7 @@ namespace pNotes
             singularFile = note;
         }
 
-        static void ReadNote()
+        static void ReadFile()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -607,19 +598,19 @@ namespace pNotes
             }
             if (usingArgs)
             {
-                HoneInOnNote();
+                HoneInOnFile();
             }
 
             if (!singularFile.Equals(""))
             {
                 foreach (string line in Notes.GetNote(singularFile))
                 {
-                    Output.WriteToConsole(line);
+                    Output.WriteLine(line);
                 }
             }
         }
 
-        static void OpenNote()
+        static void OpenFileInNotepad()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -641,7 +632,7 @@ namespace pNotes
             }
         }
 
-        static void OpenNoteInCode()
+        static void OpenFileInCode()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -658,20 +649,12 @@ namespace pNotes
             {
                 if (Notes.NoteExists(singularFile))
                 {
-                    Process.Start(@"C:\Users\Skymap\AppData\Local\Programs\Microsoft VS Code\Code.exe", singularFile);
+                    Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"..\Local\Programs\Microsoft VS Code\Code.exe"), singularFile);
                 }
             }
         }
 
-        static void OpenSavedNote()
-        {
-            //if (Notes.NoteExists(Properties.Resources.PresetNote))
-            //{
-            //    Process.Start("notepad.exe", Properties.Resources.PresetNote);
-            //}
-        }
-
-        static void NewNote()
+        static void NewFile()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -688,22 +671,22 @@ namespace pNotes
                 newFileName = PromptUser("Enter new file name: ");
             }
 
-            if (newFileName.Length < 5)
-            {
-                newFileName += ".txt";
-            }
-            else
-            {
-                if (newFileName.Substring(newFileName.Length - 5) != ".txt")
-                {
-                    newFileName += ".txt";
-                }
-            }
+            //if (newFileName.Length < 5)
+            //{
+            //    newFileName += ".txt";
+            //}
+            //else
+            //{
+            //    if (newFileName.Substring(newFileName.Length - 5) != ".txt")
+            //    {
+            //        newFileName += ".txt";
+            //    }
+            //}
 
             string fullFileName = Notes.GetFilename(newFileName);
             if (Notes.NoteExists(fullFileName))
             {
-                Output.WriteToConsole("A file by this name already exists.");
+                Output.WriteLine("A file by the name " + newFileName + " already exists.");
             }
             else
             {
@@ -714,16 +697,6 @@ namespace pNotes
         static void OpenDirectory()
         {
             Notes.OpenDirectory();
-        }
-
-        static void ClearConsole()
-        {
-            Console.Clear();
-        }
-
-        static void PrintHorizontalBarrier()
-        {
-            Output.WriteToConsole("________________________________________________\n");
         }
     }
 }
