@@ -396,3 +396,10 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+pNotes.sln
+pNotes/App.config
+pNotes/pNotes.csproj
+pNotes/Properties/AssemblyInfo.cs
+pNotes/Properties/launchSettings.json
+pNotes/Properties/Resources.Designer.cs
+pNotes/Properties/Resources.resx
