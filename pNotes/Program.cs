@@ -11,7 +11,7 @@ namespace pNotes
         public static bool surfing = true;
         public static bool searching = false;
         public static string currentDir;
-        public static List<string> forbiddenFileTypes = new List<string>() { ".db", ".lib", ".pri", ".exe", ".zip", "svn.base", ".ipch" };
+        public static List<string> forbiddenFileTypes = new List<string>() { ".db", ".lib", ".pri", ".exe", ".zip", "svn.base", ".ipch", ".tex", ".fsb" };
 
         static string[] internalArgs;
         static string singularFile = "";
@@ -470,27 +470,39 @@ namespace pNotes
                 List<string> toWrite = new List<string>();
                 findExcerptTask = Task<List<string>>.Factory.StartNew(() =>
                 {
+                    bool wasRecursive = recursive;
+                    if (path == currentDir)
+                    {
+                        recursive = false;
+                    }
                     toWrite = DoFindExcerpt(term, large, recursive, path);
+                    if (path == currentDir)
+                    {
+                        recursive = wasRecursive;
+                    }
                     return toWrite;
                 });
 
-                Console.WriteLine("Searching for excerpt in " + currentDir);
-
-                Output.PrintHorizontalBarrier();
+                if (dirsToSearch.Contains(k))
+                {
+                    Console.WriteLine("Searching for \"" + term + "\" in " + path);
+                    Output.PrintHorizontalBarrier();
+                }
                 while (!findExcerptTask.IsCompleted)
                 {
 
                 }
-                if (large)
-                {
-                    foreach (string line in findExcerptTask.Result)
-                    {
-                        Output.WriteLine(line);
-                    }
-                }
+                //if (large)
+                //{
+                //    foreach (string line in findExcerptTask.Result)
+                //    {
+                //        Output.WriteLine(line);
+                //    }
+                //}
                 searching = false;
                 k++;
             } while (exclude);
+
         }
 
         static List<string> DoFindExcerpt(string term, bool large, bool recursive, string path)
