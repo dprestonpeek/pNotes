@@ -15,6 +15,8 @@ namespace pNotes
 
         static string[] internalArgs;
         static string singularFile = "";
+
+        static string logFile = "log.txt";
         static void Main(string[] externalArgs)
         {
             currentDir = Directory.GetCurrentDirectory();
@@ -24,6 +26,7 @@ namespace pNotes
             Commands.Initialize();
             AddCommands();
             Notes notes = new Notes();
+            Task task = Task.CompletedTask;
             //Console.SetWindowSize(200, 20);
 
             if (externalArgs.Length > 0 && !externalArgs[0].Equals(""))
@@ -36,6 +39,7 @@ namespace pNotes
             {
                 if (surfing)
                 {
+                    while (!task.IsCompleted) { }
                     if (!initial)
                     {
                         Output.PrintHorizontalBarrier();
@@ -69,38 +73,47 @@ namespace pNotes
                         input = Console.ReadLine();
                     }
                     Output.NewLine();
-
-                    foreach (Command command in Commands.List)
+                    string[] commands = input.Split(new string[] { "+++" }, StringSplitOptions.None);
+                    foreach (string cmd in commands)
                     {
-                        if (command.ContainsCommand(input))
+                        while (!task.IsCompleted)
                         {
-                            try
+
+                        }
+                        input = cmd.Trim();
+                        foreach (Command command in Commands.List)
+                        {
+                            if (command.ContainsCommand(input))
                             {
-                                if (command.EqualsFullCommand(input))
+                                try
                                 {
-                                    internalArgs = new string[0];
+                                    if (command.EqualsFullCommand(input))
+                                    {
+                                        internalArgs = new string[0];
+                                    }
+                                    else
+                                    {
+                                        internalArgs = input.Split(' ');
+                                    }
+                                    task = Task.Factory.StartNew(() => { command.Action.Invoke(); });
+                                    break;
                                 }
-                                else
+                                catch (Exception e)
                                 {
-                                    internalArgs = input.Split(' ');
+                                    Output.WriteLine(e.Message);
+                                    File.WriteAllText(logFile, e.Message);
                                 }
-                                command.Action.Invoke();
-                                break;
                             }
-                            catch (Exception e)
+                            if (input == "exit")
                             {
-                                Output.WriteLine(e.Message);
+                                Environment.Exit(0);
                             }
                         }
+                        Output.NewLine();
                         if (input == "exit")
                         {
-                            break;
+                            Environment.Exit(0);
                         }
-                    }
-                    Output.NewLine();
-                    if (input == "exit")
-                    {
-                        break;
                     }
                 }
             }
@@ -320,6 +333,10 @@ namespace pNotes
             {
                 for (int i = 1; i < internalArgs.Length; i++)
                 {
+                    if (internalArgs[i] == "")
+                    {
+                        continue;
+                    }
                     if (i < internalArgs.Length - 1)
                         term += internalArgs[i];
                     if (i < internalArgs.Length - 2)
