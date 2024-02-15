@@ -11,7 +11,9 @@ namespace pNotes
         public static bool surfing = true;
         public static bool searching = false;
         public static string currentDir;
-        public static List<string> forbiddenFileTypes = new List<string>() { ".db", ".lib", ".pri", ".exe", ".zip", "svn.base", ".ipch", ".tex", ".fsb" };
+        public static List<string> forbiddenFileTypes = new List<string>() { ".db", ".lib", ".pri", ".exe", ".zip", "svn.base", ".ipch", ".tex", ".fsb", ".pdb", ".ilk" };
+
+        public static string version = "pNotes v0.91";
 
         static string[] internalArgs;
         static string singularFile = "";
@@ -81,32 +83,48 @@ namespace pNotes
 
                         }
                         input = cmd.Trim();
-                        foreach (Command command in Commands.List)
+                        if (input.Contains("help"))
                         {
-                            if (command.ContainsCommand(input))
+                            Command command = Command.GetCommandByString("help", Commands.List);
+                            if (command.EqualsFullCommand(input))
                             {
-                                try
-                                {
-                                    if (command.EqualsFullCommand(input))
-                                    {
-                                        internalArgs = new string[0];
-                                    }
-                                    else
-                                    {
-                                        internalArgs = input.Split(' ');
-                                    }
-                                    task = Task.Factory.StartNew(() => { command.Action.Invoke(); });
-                                    break;
-                                }
-                                catch (Exception e)
-                                {
-                                    Output.WriteLine(e.Message);
-                                    File.WriteAllText(logFile, e.Message);
-                                }
+                                internalArgs = new string[0];
                             }
-                            if (input == "exit")
+                            else
                             {
-                                Environment.Exit(0);
+                                internalArgs = input.Split(' ');
+                            }
+                            task = Task.Factory.StartNew(() => { command.Action.Invoke(); });
+                        }
+                        else
+                        {
+                            foreach (Command command in Commands.List)
+                            {
+                                if (command.ContainsCommand(input))
+                                {
+                                    try
+                                    {
+                                        if (command.EqualsFullCommand(input))
+                                        {
+                                            internalArgs = new string[0];
+                                        }
+                                        else
+                                        {
+                                            internalArgs = input.Split(' ');
+                                        }
+                                        task = Task.Factory.StartNew(() => { command.Action.Invoke(); });
+                                        break;
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Output.WriteLine(e.Message);
+                                        File.WriteAllText(logFile, e.Message);
+                                    }
+                                }
+                                if (input == "exit")
+                                {
+                                    Environment.Exit(0);
+                                }
                             }
                         }
                         Output.NewLine();
@@ -122,22 +140,22 @@ namespace pNotes
         static void AddCommands()
         {
             //add commands here
-            Commands.AddCommand("Print File List", new string[2] { "list", "ls" }, "Print names of available files", "Print files containing specified keyword", PrintFiles);
-            Commands.AddCommand("Find Excerpt", new string[2] { "find", "fnd" }, "Open \"Find Command Help Page\"", "Search files for specified excerpt, print", FindExcerpt);
-            Commands.AddCommand("Search Partial Filename", new string[1] { "search" }, "", "Search file names for specified excerpt, print", SearchFilenames);
-            Commands.AddCommand("Read File", new string[2] { "read", "red" }, "Read selected file", "Print file text in cmd window", ReadFile);
-            Commands.AddCommand("Open File", new string[2] { "open", "opn" }, "Open selected file", "Open file in notepad", OpenFileInNotepad);
-            Commands.AddCommand("Open File in Code", new string[1] { "code" }, "Open file in VS Code", "Open file in VS Code", OpenFileInCode);
-            Commands.AddCommand("Hone in on File ", new string[2] { "hone", "hn" }, "Set context to everything", "Set context to file matching specified keyword", HoneInOnFile);
-            Commands.AddCommand("New File", new string[1] { "new" }, "Create new file", "", NewFile);
-            Commands.AddCommand("Open Directory", new string[1] { "dir" }, "Open directory of files in explorer", "", OpenDirectory);
-            Commands.AddCommand("Clear Console", new string[2] { "clear", "cls" }, "Clear console text", "", Output.ClearConsole);
-            Commands.AddCommand("Print History", new string[2] { "his", "uncls" }, "Print collected history", "", PrintHistory);
+            Commands.AddCommand("Print File List", new string[2] { "list", "ls" }, "Print names of available files", "Print files containing specified keyword", Help.listHelp, PrintFiles);
+            Commands.AddCommand("Find Excerpt", new string[2] { "find", "fnd" }, "Open \"Find Command Help Page\"", "Search files for specified excerpt, print", Help.findHelp, FindExcerpt);
+            Commands.AddCommand("Search Partial Filename", new string[1] { "search" }, "", "Search file names for specified excerpt, print", Help.searchHelp, SearchFilenames);
+            Commands.AddCommand("Read File", new string[2] { "read", "red" }, "Read honed-in file", "Print file text in cmd window", Help.readHelp, ReadFile);
+            Commands.AddCommand("Open File", new string[2] { "open", "opn" }, "Open selected file", "Open file in notepad", Help.openHelp, OpenFileInNotepad);
+            Commands.AddCommand("Open File in Code", new string[1] { "code" }, "Open file in VS Code", "Open file in VS Code", Help.codeHelp, OpenFileInCode);
+            Commands.AddCommand("Hone in on File ", new string[2] { "hone", "hn" }, "Set context to everything", "Set context to file matching specified keyword", Help.honeHelp, HoneInOnFile);
+            Commands.AddCommand("New File", new string[1] { "new" }, "Create new file", "Create new file with name", Help.newHelp, NewFile);
+            Commands.AddCommand("Open Directory", new string[1] { "dir" }, "Open directory of files in explorer", "", Help.dirHelp, OpenDirectory);
+            Commands.AddCommand("Clear Console", new string[2] { "clear", "cl" }, "Clear console text", "", Help.clearHelp, Output.ClearConsole);
+            Commands.AddCommand("Print History", new string[2] { "his", "uncl" }, "Print collected history", "", Help.hisHelp, PrintHistory);
             //Commands.AddCommand("Open Saved File", new string[2] { "log", "note" }, "Open presaved file", "", OpenSavedFile);
-            Commands.AddCommand("Change Path", new string[2] { "path", "where" }, "Print the current path", "Change the path a given directory", DirPath);
+            Commands.AddCommand("Change Path", new string[2] { "path", "where" }, "Print the current path", "Change the path a given directory", Help.pathHelp, DirPath);
 
-            Commands.AddCommand("Help menu", new string[2] { "help", "hlp" }, "Open this help menu", "", Output.PrintHelp);
-            Commands.AddCommand("Exit program", new string[1] { "exit" }, "Exit the program", "", null);
+            Commands.AddCommand("Help menu", new string[2] { "help", "hlp" }, "Open this help menu", "Open command help page", Help.helpHelp, PrintHelp);
+            Commands.AddCommand("Exit program", new string[1] { "exit" }, "Exit the program", "", Help.exitHelp, null);
         }
 
         static string PromptUser(string question)
@@ -145,6 +163,18 @@ namespace pNotes
             Output.WriteLine(question);
             string answer = Console.ReadLine();
             return answer;
+        }
+
+        static void PrintHelp()
+        {
+            if (internalArgs.Length > 0)
+            {
+                Help.PrintCommandHelp(internalArgs[1]);
+            }
+            else
+            {
+                Output.PrintHelp();
+            }
         }
 
         static void DirPath()
@@ -411,6 +441,7 @@ namespace pNotes
                 input = PromptUser("Choose a 1 or more root directories to search in. (ex. \"3\", \"5-10\")");
                 input = input.Replace(" ", "");
                 string[] inputs = input.Split(',');
+                int rootDir;
                 foreach (string i in inputs)
                 {
                     exclude = true;
@@ -427,7 +458,7 @@ namespace pNotes
                             maxs.Add(max);
                         }
                     }
-                    else if (int.TryParse(i, out int rootDir))
+                    else if (int.TryParse(i, out rootDir))
                     {
                         prompt = true;
                         min = rootDir;
@@ -570,18 +601,44 @@ namespace pNotes
         static void SearchFilenames()
         {
             string term = "";
-            if (internalArgs.Length == 0 || internalArgs.Length > 2)
+            string modifier = "";
+            bool recursive = false;
+            if (internalArgs.Length == 0 || internalArgs.Length > 3)
             {
                 Output.WriteLine("Please enter a valid argument");
                 return;
             }
+            else if (internalArgs.Length == 3)
+            {
+                modifier = internalArgs[2];
+                if (!modifier.Equals("-r"))
+                {
+                    Output.WriteLine("Please enter a valid argument");
+                    return;
+                }
+                else
+                {
+                    recursive = true;
+                }
+            }
+            term = internalArgs[1];
+
+            if (recursive)
+            {
+                foreach (string dir in BuildDirectoriesList(currentDir, true))
+                {
+                    foreach (string file in Directory.GetFiles(dir))
+                    {
+                        if (file.ToLower().Contains(term.ToLower()))
+                        {
+                            Output.WriteLine(file);
+                        }
+                    }
+                }
+            }
             else
             {
-                term = internalArgs[1];
-            }
-            foreach (string dir in BuildDirectoriesList(currentDir, true))
-            {
-                foreach (string file in Directory.GetFiles(dir))
+                foreach (string file in Directory.GetFiles(currentDir))
                 {
                     if (file.ToLower().Contains(term.ToLower()))
                     {

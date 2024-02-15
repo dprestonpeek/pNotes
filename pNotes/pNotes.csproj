@@ -96,6 +96,7 @@
   <ItemGroup>
     <Compile Include="Commands.cs" />
     <Compile Include="Editor.cs" />
+    <Compile Include="Help.cs" />
     <Compile Include="Notes.cs" />
     <Compile Include="Output.cs" />
     <Compile Include="Program.cs" />

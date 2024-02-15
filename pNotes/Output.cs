@@ -69,8 +69,9 @@ namespace pNotes
         public static void PrintHelp()
         {
             PrintHorizontalBarrier();
-            WriteLine("pNotes v0.9");
+            WriteLine(Program.version);
             PrintHorizontalBarrier();
+            WriteLine("Enter 'help {command}' for more details on a specific command.\n");
             WriteLine("Commands" + "\t" + "Functions" + "\t\t" + "Desc (no args)" + "\t\t\t" + "Desc (w/ args)");
             foreach (Command command in Commands.List)
             {
