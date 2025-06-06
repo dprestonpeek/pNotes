@@ -20,7 +20,6 @@ namespace pNotes
             {
                 Loop();
             }
-            //CenterStrings(new string[4] { "Func1 []", "Func2 []", "Func3 []", "Func4 []" });
         }
 
         public static void Loop()

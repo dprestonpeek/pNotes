@@ -8,6 +8,7 @@ namespace pNotes
 {
     public class Help
     {
+        // TODO: Create a Strings text file to pull these from.
         public static string listHelp = "Similar to 'ls' command in bash. Lists some or all files at the current directory depending on args given.\n\n" + 
             "Examples:\n'list text' or 'ls text' prints all files containing the 'text' keyword. \n" + 
             "'list' or 'ls' prints all files at the current directory.";

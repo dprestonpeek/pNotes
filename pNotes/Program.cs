@@ -137,7 +137,7 @@ namespace pNotes
             }
         }
 
-        static void AddCommands()
+        private static void AddCommands()
         {
             //add commands here
             Commands.AddCommand("Print File List", new string[2] { "list", "ls" }, "Print names of available files", "Print files containing specified keyword", Help.listHelp, PrintFiles);
@@ -158,14 +158,14 @@ namespace pNotes
             Commands.AddCommand("Exit program", new string[1] { "exit" }, "Exit the program", "", Help.exitHelp, null);
         }
 
-        static string PromptUser(string question)
+        private static string PromptUser(string question)
         {
             Output.WriteLine(question);
             string answer = Console.ReadLine();
             return answer;
         }
 
-        static void PrintHelp()
+        private static void PrintHelp()
         {
             if (internalArgs.Length > 0)
             {
@@ -177,7 +177,7 @@ namespace pNotes
             }
         }
 
-        static void DirPath()
+        private static void DirPath()
         {
             if (internalArgs.Length > 0 && !internalArgs[1].Equals(""))
             {
@@ -217,7 +217,7 @@ namespace pNotes
             }
         }
 
-        static void DirPath(string externalArgs)
+        private static void DirPath(string externalArgs)
         {
             if (!externalArgs.Equals(""))
             {
@@ -233,7 +233,7 @@ namespace pNotes
             }
         }
 
-        static void PrintFiles()
+        private static void PrintFiles()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -255,7 +255,7 @@ namespace pNotes
             }
         }
 
-        static void PrintRecentNotes()
+        private static void PrintRecentNotes()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -278,7 +278,7 @@ namespace pNotes
             }
         }
 
-        static void PrintHistory()
+        private static void PrintHistory()
         {
             if (internalArgs.Length > 1)
             {
@@ -287,7 +287,7 @@ namespace pNotes
             Output.PrintHistory();
         }
 
-        static List<string> GetFilesAndDirectories(string filename, bool withFilePaths)
+        private static List<string> GetFilesAndDirectories(string filename, bool withFilePaths)
         {
             List<string> filesAndDirs = new List<string>();
             bool usingArgs = false;
@@ -313,7 +313,7 @@ namespace pNotes
             return filesAndDirs;
         }
 
-        static List<string> GetSortedNotes(string filename, bool withFilePaths)
+        private static List<string> GetSortedNotes(string filename, bool withFilePaths)
         {
             List<string> notes = new List<string>();
             bool usingArgs = false;
@@ -338,7 +338,7 @@ namespace pNotes
             return notes;
         }
 
-        static void FindExcerpt()
+        private static void FindExcerpt()
         {
             bool exclude = false;
             bool recursive = false;
@@ -424,7 +424,7 @@ namespace pNotes
                 int j = 1;
                 foreach (string dir in Directory.GetDirectories(currentDir))
                 {
-                    if (dir == currentDir/* || dir.Contains("netcoreapp3.1")*/)
+                    if (dir == currentDir)
                         continue;
                     rootDirs.Add(j, dir);
                     j++;
@@ -540,20 +540,13 @@ namespace pNotes
                 {
 
                 }
-                //if (large)
-                //{
-                //    foreach (string line in findExcerptTask.Result)
-                //    {
-                //        Output.WriteLine(line);
-                //    }
-                //}
                 searching = false;
                 k++;
             } while (exclude);
 
         }
 
-        static List<string> DoFindExcerpt(string term, bool large, bool recursive, string path)
+        private static List<string> DoFindExcerpt(string term, bool large, bool recursive, string path)
         {
             List<string> toWrite = new List<string>();
 
@@ -598,7 +591,7 @@ namespace pNotes
             return toWrite;
         }
 
-        static void SearchFilenames()
+        private static void SearchFilenames()
         {
             string term = "";
             string modifier = "";
@@ -648,7 +641,7 @@ namespace pNotes
             }
         }
 
-        static List<string> BuildDirectoriesList(string path, bool includeRoot)
+        private static List<string> BuildDirectoriesList(string path, bool includeRoot)
         {
             List<string> dirs = new List<string>();
             if (includeRoot)
@@ -667,12 +660,12 @@ namespace pNotes
             return dirs;
         }
 
-        static void HoneBackOut()
+        private static void HoneBackOut()
         {
             SetSingularFile("");
         }
 
-        static void HoneInOnFile()
+        private static void HoneInOnFile()
         {
             if (internalArgs.Length == 0)
             {
@@ -695,12 +688,12 @@ namespace pNotes
             }
         }
 
-        static void SetSingularFile(string note)
+        private static void SetSingularFile(string note)
         {
             singularFile = note;
         }
 
-        static void ReadFile()
+        private static void ReadFile()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -721,7 +714,7 @@ namespace pNotes
             }
         }
 
-        static void OpenFileInNotepad()
+        private static void OpenFileInNotepad()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -743,7 +736,7 @@ namespace pNotes
             }
         }
 
-        static void OpenFileInCode()
+        private static void OpenFileInCode()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -765,7 +758,7 @@ namespace pNotes
             }
         }
 
-        static void NewFile()
+        private static void NewFile()
         {
             bool usingArgs = false;
             if (internalArgs.Length > 0)
@@ -793,7 +786,7 @@ namespace pNotes
             }
         }
 
-        static void OpenDirectory()
+        private static void OpenDirectory()
         {
             Notes.OpenDirectory();
         }

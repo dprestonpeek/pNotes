@@ -216,7 +216,7 @@ namespace pNotes
             return result;
         }
 
-        static string GetHorizontalBarrier()
+        private static string GetHorizontalBarrier()
         {
             return "________________________________________________";
         }
